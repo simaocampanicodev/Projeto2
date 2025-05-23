@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Spectre.Console;
 using CraftingSim.Model;
+using System.IO;
 
 namespace CraftingSim.View
 {

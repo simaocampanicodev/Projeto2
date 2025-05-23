@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 
 namespace CraftingSim.Model
@@ -31,7 +32,45 @@ namespace CraftingSim.Model
         /// <param name="recipeFiles">Array of file paths</param>
         public void LoadRecipesFromFile(string[] recipeFiles)
         {
-            //TODO Implement Me
+            foreach (string file in recipeFiles)
+            {
+                try
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    if (lines.Length < 2) continue;
+
+                    string recipeName = lines[0];
+                    double successRate = double.Parse(lines[1]);
+                    Dictionary<IMaterial, int> materials = new Dictionary<IMaterial, int>();
+
+                    for (int i = 2; i < lines.Length; i++)
+                    {
+                        string[] parts = lines[i].Split(',');
+                        if (parts.Length == 2)
+                        {
+                            int materialId = int.Parse(parts[0]);
+                            int quantity = int.Parse(parts[1]);
+                    
+                            IMaterial material = inventory.GetMaterial(materialId);
+                            if (material != null)
+                            {
+                                materials.Add(material, quantity);
+                            }
+                        }
+                    }
+
+                    IRecipe recipe = new Recipe(recipeName, materials, successRate);
+                    recipeList.Add(recipe);
+                }
+                catch (Exception)
+                {
+                    // Skip invalid recipe files
+                    continue;
+                }
+            }
+
+            // Sort recipes alphabetically by name
+            recipeList.Sort();
         }
 
         /// <summary>
