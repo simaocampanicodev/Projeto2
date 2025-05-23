@@ -47,6 +47,28 @@ namespace CraftingSim.Model
 
                     string recipeName = recipeInfo[0].Trim();
                     
+                    // Convert recipe name format (e.g., "iron-sword" -> "IronSword")
+                    if (recipeName.Contains("-"))
+                    {
+                        string[] parts = recipeName.Split('-');
+                        recipeName = "";
+                        foreach (string part in parts)
+                        {
+                            if (!string.IsNullOrEmpty(part))
+                            {
+                                recipeName += char.ToUpper(part[0]) + part.Substring(1).ToLower();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Capitalize first letter if no dashes
+                        if (!string.IsNullOrEmpty(recipeName))
+                        {
+                            recipeName = char.ToUpper(recipeName[0]) + recipeName.Substring(1).ToLower();
+                        }
+                    }
+                    
                     // Try parsing success rate as decimal with both . and , separators
                     string successRateStr = recipeInfo[1].Trim().Replace(',', '.');
                     if (!double.TryParse(successRateStr, System.Globalization.NumberStyles.Float, 
