@@ -10,22 +10,19 @@ namespace CraftingSim.Model
         public Material(int id, string name)
         {
             Id = id;
-            Name = name;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
         }
 
         public bool Equals(IMaterial other)
         {
             if (other == null) return false;
-            return Id == other.Id || Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase);
+            return Id == other.Id || 
+                   string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is IMaterial other)
-            {
-                return Equals(other);
-            }
-            return false;
+            return obj is IMaterial other && Equals(other);
         }
 
         public override int GetHashCode()
