@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.50.0" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.50.0" />
     <PackageReference Include="Spectre.Console.ImageSharp" Version="0.50.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.4" />
   </ItemGroup>
