@@ -38,7 +38,14 @@ namespace CraftingSim.Model
         /// <param name="quantity">The new amount to set</param>
         public void AddMaterial(IMaterial material, int quantity)
         {
-            //TODO Implement Me
+            if (materials.ContainsKey(material))
+            {
+                materials[material] = quantity;
+            }
+            else
+            {
+                materials.Add(material, quantity);
+            }
         }
 
         /// <summary>
@@ -50,8 +57,17 @@ namespace CraftingSim.Model
         /// <returns>True if removed successfuly, false if not enough material</returns>
         public bool RemoveMaterial(IMaterial material, int quantity)
         {
-            // TODO Implement Me
-            return false;
+            if (!materials.ContainsKey(material) || materials[material] < quantity)
+            {
+                return false;
+            }
+
+            materials[material] -= quantity;
+            if (materials[material] == 0)
+            {
+                materials.Remove(material);
+            }
+            return true;
         }
 
         /// <summary>
@@ -84,7 +100,25 @@ namespace CraftingSim.Model
         /// <param name="file">Path to the materials file</param>
         public void LoadMaterialsFromFile(string file)
         {
-            //TODO Implement Me
+            string[] lines = File.ReadAllLines(file);
+            foreach (string line in lines)
+            {
+                string[] parts = line.Split(',');
+                if (parts.Length == 3)
+                {
+                    int id = int.Parse(parts[0]);
+                    string name = parts[1];
+                    int quantity = int.Parse(parts[2]);
+            
+                    IMaterial material = GetMaterial(id);
+                    if (material == null)
+                    {
+                        material = new Material(id, name);
+                    }
+            
+                    AddMaterial(material, quantity);
+                }
+            }
         }
     }
 }
