@@ -1,6 +1,7 @@
 using CraftingSim.Model;
 using CraftingSim.View;
 using System.IO;
+using Spectre.Console;
 
 namespace CraftingSim.Controller 
 {

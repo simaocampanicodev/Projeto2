@@ -3,6 +3,7 @@ using CraftingSim.Controller;
 using CraftingSim.Model;
 using CraftingSim.View;
 using System.IO;
+using Spectre.Console;
 
 
 namespace CraftingSim {

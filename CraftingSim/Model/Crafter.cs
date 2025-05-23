@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Spectre.Console;
 
 
 namespace CraftingSim.Model
@@ -38,29 +39,36 @@ namespace CraftingSim.Model
                 {
                     string[] lines = File.ReadAllLines(file);
                     if (lines.Length < 2) continue;
+                    
+                    string[] recipeInfo = lines[0].Split(',');
+                    if (recipeInfo.Length != 2) continue;
 
-                    string recipeName = lines[0];
-                    double successRate = double.Parse(lines[1]);
+                    string recipeName = recipeInfo[0].Trim();
+                    if (!double.TryParse(recipeInfo[1].Trim(), out double successRate)) continue;
+
                     Dictionary<IMaterial, int> materials = new Dictionary<IMaterial, int>();
-
-                    for (int i = 2; i < lines.Length; i++)
+                    
+                    for (int i = 1; i < lines.Length; i++)
                     {
                         string[] parts = lines[i].Split(',');
-                        if (parts.Length == 2)
+                        if (parts.Length != 2) continue;
+
+                        if (int.TryParse(parts[0].Trim(), out int materialId) && 
+                            int.TryParse(parts[1].Trim(), out int quantity))
                         {
-                            int materialId = int.Parse(parts[0]);
-                            int quantity = int.Parse(parts[1]);
-                    
                             IMaterial material = inventory.GetMaterial(materialId);
                             if (material != null)
                             {
-                                materials.Add(material, quantity);
+                                materials[material] = quantity;
                             }
                         }
                     }
 
-                    IRecipe recipe = new Recipe(recipeName, materials, successRate);
-                    recipeList.Add(recipe);
+                    if (materials.Count > 0)
+                    {
+                        Recipe recipe = new Recipe(recipeName, materials, successRate);
+                        recipeList.Add(recipe);
+                    }
                 }
                 catch (Exception)
                 {
@@ -69,7 +77,6 @@ namespace CraftingSim.Model
                 }
             }
 
-            // Sort recipes alphabetically by name
             recipeList.Sort();
         }
 

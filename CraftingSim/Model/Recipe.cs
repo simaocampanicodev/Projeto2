@@ -1,5 +1,7 @@
-using System;
+﻿using System;
+using System.IO;
 using System.Collections.Generic;
+using Spectre.Console;
 
 namespace CraftingSim.Model
 {
@@ -8,25 +10,18 @@ namespace CraftingSim.Model
         public string Name { get; }
         public IReadOnlyDictionary<IMaterial, int> RequiredMaterials { get; }
         public double SuccessRate { get; }
-
+    
         public Recipe(string name, Dictionary<IMaterial, int> materials, double successRate)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            RequiredMaterials = new Dictionary<IMaterial, int>(materials ?? 
-                                                               throw new ArgumentNullException(nameof(materials)));
+            RequiredMaterials = materials ?? throw new ArgumentNullException(nameof(materials));
             SuccessRate = successRate;
-
-            if (successRate < 0 || successRate > 1)
-            {
-                throw new ArgumentException("Success rate must be between 0 and 1", 
-                    nameof(successRate));
-            }
         }
-
-        public int CompareTo(IRecipe other)
+    
+        public int CompareTo(IRecipe obj)
         {
-            if (other == null) return 1;
-            return string.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            if (obj == null) return 1;
+            return string.Compare(Name, obj.Name, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

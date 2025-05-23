@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using Spectre.Console;
 
 namespace CraftingSim.Model
 {
@@ -39,14 +41,9 @@ namespace CraftingSim.Model
         /// <param name="quantity">The new amount to set</param>
         public void AddMaterial(IMaterial material, int quantity)
         {
-            if (materials.ContainsKey(material))
-            {
-                materials[material] = quantity;
-            }
-            else
-            {
-                materials.Add(material, quantity);
-            }
+            if (materials.TryAdd(material, quantity)) 
+                return;
+            materials[material] += quantity;
         }
 
         /// <summary>
@@ -58,17 +55,12 @@ namespace CraftingSim.Model
         /// <returns>True if removed successfuly, false if not enough material</returns>
         public bool RemoveMaterial(IMaterial material, int quantity)
         {
-            if (!materials.ContainsKey(material) || materials[material] < quantity)
+            if (GetQuantity(material) >= quantity)
             {
-                return false;
+                materials[material] -= quantity;
+                return true;
             }
-
-            materials[material] -= quantity;
-            if (materials[material] == 0)
-            {
-                materials.Remove(material);
-            }
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -101,23 +93,13 @@ namespace CraftingSim.Model
         /// <param name="file">Path to the materials file</param>
         public void LoadMaterialsFromFile(string file)
         {
-            string[] lines = File.ReadAllLines(file);
-            foreach (string line in lines)
+            using (StreamReader sr = new StreamReader(file))
             {
-                string[] parts = line.Split(',');
-                if (parts.Length == 3)
+                string line;
+                while ((line = sr.ReadLine()) != null)
                 {
-                    int id = int.Parse(parts[0]);
-                    string name = parts[1];
-                    int quantity = int.Parse(parts[2]);
-            
-                    IMaterial material = GetMaterial(id);
-                    if (material == null)
-                    {
-                        material = new Material(id, name);
-                    }
-            
-                    AddMaterial(material, quantity);
+                    string[] matData = line.Split(", ");
+                    materials.Add(new Material(int.Parse(matData[0]), matData[1]), int.Parse(matData[2]));
                 }
             }
         }
