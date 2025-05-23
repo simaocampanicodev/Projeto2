@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using Spectre.Console;
 
-
 namespace CraftingSim.Model
 {
     /// <summary>
@@ -37,20 +36,32 @@ namespace CraftingSim.Model
             {
                 try
                 {
+                    if (!File.Exists(file)) continue;
+
                     string[] lines = File.ReadAllLines(file);
                     if (lines.Length < 2) continue;
                     
+                    // Parse recipe header (name, success rate)
                     string[] recipeInfo = lines[0].Split(',');
                     if (recipeInfo.Length != 2) continue;
 
                     string recipeName = recipeInfo[0].Trim();
-                    if (!double.TryParse(recipeInfo[1].Trim(), out double successRate)) continue;
+                    
+                    // Try parsing success rate as decimal with both . and , separators
+                    string successRateStr = recipeInfo[1].Trim().Replace(',', '.');
+                    if (!double.TryParse(successRateStr, System.Globalization.NumberStyles.Float, 
+                        System.Globalization.CultureInfo.InvariantCulture, out double successRate)) 
+                        continue;
 
                     Dictionary<IMaterial, int> materials = new Dictionary<IMaterial, int>();
                     
+                    // Parse required materials
                     for (int i = 1; i < lines.Length; i++)
                     {
-                        string[] parts = lines[i].Split(',');
+                        string line = lines[i].Trim();
+                        if (string.IsNullOrEmpty(line)) continue;
+                        
+                        string[] parts = line.Split(',');
                         if (parts.Length != 2) continue;
 
                         if (int.TryParse(parts[0].Trim(), out int materialId) && 
@@ -88,6 +99,11 @@ namespace CraftingSim.Model
         /// <returns>A message indicating success, failure, or error</returns>
         public string CraftItem(string recipeName)
         {
+            if (recipeList.Count == 0)
+            {
+                return "No recipes available. Please check your recipe files.";
+            }
+            
             IRecipe selected = null;
 
             for (int i = 0; i < recipeList.Count; i++)
@@ -103,6 +119,7 @@ namespace CraftingSim.Model
             if (selected == null)
                 return "Recipe not found.";
 
+            // Check if we have enough materials
             foreach (KeyValuePair<IMaterial, int> required in selected.RequiredMaterials)
             {
                 IMaterial material = required.Key;
@@ -121,16 +138,21 @@ namespace CraftingSim.Model
                 }
             }
 
+            // Consume materials
             foreach (KeyValuePair<IMaterial, int> required in selected.RequiredMaterials)
+            {
                 if (!inventory.RemoveMaterial(required.Key, required.Value))
-                    return "Not enough materials";
+                {
+                    return "Error: Could not remove materials from inventory";
+                }
+            }
 
+            // Determine success/failure
             Random rng = new Random();
             if (rng.NextDouble() < selected.SuccessRate)
                 return "Crafting '" + selected.Name + "' succeeded!";
             else
                 return "Crafting '" + selected.Name + "' failed. Materials lost.";
-
         }
     }
 }

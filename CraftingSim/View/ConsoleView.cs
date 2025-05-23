@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Spectre.Console;
 using CraftingSim.Model;
 using System.IO;
+using System.Linq;
 
 namespace CraftingSim.View
 {
@@ -36,12 +37,20 @@ namespace CraftingSim.View
         /// their quantities</param>
         public void DisplayMaterials(Inventory inventory)
         {
+            var materials = inventory.Materials.ToList();
+            
+            if (materials.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[red]No materials in inventory![/]\n");
+                return;
+            }
+
             Table table = new Table();
             table.AddColumn("ID");
             table.AddColumn("Name");
             table.AddColumn("Quantity");
 
-            foreach (IMaterial material in inventory.Materials)
+            foreach (IMaterial material in materials)
             {
                 table.AddRow(
                     material.Id.ToString(),
@@ -50,6 +59,7 @@ namespace CraftingSim.View
                 );
             }
             AnsiConsole.Write(table);
+            AnsiConsole.WriteLine();
         }
 
         /// <summary>
@@ -58,12 +68,20 @@ namespace CraftingSim.View
         /// <param name="recipeList">Read only list of recipes to display</param>
         public void DisplayRecipes(IEnumerable<IRecipe> recipeList)
         {
+            var recipes = recipeList.ToList();
+            
+            if (recipes.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[red]No recipes available![/]");
+                AnsiConsole.MarkupLine("[yellow]Make sure your recipe files are in the correct format.[/]\n");
+                return;
+            }
 
             Table table = new Table();
             table.AddColumn("Recipe");
             table.AddColumn("Materials Required");
 
-            foreach (IRecipe recipe in recipeList)
+            foreach (IRecipe recipe in recipes)
             {
                 string list = "";
                 foreach (KeyValuePair<IMaterial, int> entry in recipe.RequiredMaterials)
@@ -77,6 +95,7 @@ namespace CraftingSim.View
             }
 
             AnsiConsole.Write(table);
+            AnsiConsole.WriteLine();
         }
 
         /// <summary>
@@ -90,11 +109,18 @@ namespace CraftingSim.View
             foreach (IRecipe recipe in recipeList)
                 names.Add(recipe.Name);
 
+            if (names.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[red]No recipes available to craft![/]");
+                return null;
+            }
+
             return AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Select a recipe to craft")
                     .AddChoices(names));
         }
+        
         /// <summary>
         /// Displays the result of the crafting attempt.
         /// </summary>
@@ -106,6 +132,5 @@ namespace CraftingSim.View
             else
                 AnsiConsole.MarkupLine("[red]" + message + "[/]\n\n");
         }
-
     }
 }

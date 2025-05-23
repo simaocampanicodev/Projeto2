@@ -2,6 +2,7 @@ using CraftingSim.Model;
 using CraftingSim.View;
 using System.IO;
 using Spectre.Console;
+using System.Linq;
 
 namespace CraftingSim.Controller 
 {
@@ -14,7 +15,6 @@ namespace CraftingSim.Controller
         private readonly Inventory inventory;
         private readonly ICrafter crafter;
         private readonly IView view;
-
 
         //Initializes the controller with inventory, crafter, and view.
         public CraftingController(Inventory inventory, ICrafter crafter,
@@ -47,9 +47,10 @@ namespace CraftingSim.Controller
                         view.DisplayRecipes(crafter.RecipeList);
                         break;
                     case "Craft Item":
+                        
                         string recipeName = view.AskForRecipe(crafter.RecipeList);
-                        string result = crafter.CraftItem(recipeName);
-                        view.ShowResults(result);
+                        if (recipeName != null) { string result = crafter.CraftItem(recipeName); view.ShowResults(result);
+                        }
                         break;
                     case "Exit":
                         exit = true;
